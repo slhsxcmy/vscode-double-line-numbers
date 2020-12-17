@@ -3,15 +3,14 @@
 // TODO: generate images from maxIcons to totalLines only
 'use strict';
 import * as vscode from 'vscode';
-import * as path from "path";
-import { generateImages } from "./generateImages";
+import { generateImages, OUT_DIR } from "./generateImages";
 
 const OFF = 0;
 const ABS = 1;
 const REL = 2;
 
 export function activate(context: vscode.ExtensionContext) {
-    var decorations: vscode.TextEditorDecorationType[];// = loadImages();
+    var decorations: vscode.TextEditorDecorationType[] = [];// = loadImages();
     var showLeftCol = OFF;
     var showRightCol = OFF;
     var maxIcons : number = context.globalState.get('maxIcons') || 1;
@@ -19,42 +18,50 @@ export function activate(context: vscode.ExtensionContext) {
     debugResetMaxIcons();
  
     function debugResetMaxIcons() {
-        context.globalState.update('maxIcons', 5);
+        context.globalState.update('maxIcons', 1);
         console.log("maxIcons reset to " + context.globalState.get('maxIcons'));
     }   
 
     generateImages(0, maxIcons);
-    decorations = loadImages();
+    loadImages(0, maxIcons);
 
     // calculate file length and generate more images if needed
     vscode.window.onDidChangeActiveTextEditor(() => {
         var editor = vscode.window.activeTextEditor;
         if (!editor) return;
         var totalLines = editor.document.lineCount;
-        if(2 * totalLines >= maxIcons) {
+        if(2 * totalLines > maxIcons) {
             generateImages(maxIcons, 2 * totalLines);
-            decorations = loadImages();
+            loadImages(maxIcons, 2 * totalLines);
             maxIcons = 2 * totalLines;
             context.globalState.update('maxIcons', maxIcons);
         }
+
+        setLeftDecorations();
+        setRightDecorations();
     });
 
     // when selecting other lines and in relative mode, set left column
     vscode.window.onDidChangeTextEditorSelection(() => {
+        console.log("vscode.window.onDidChangeTextEditorSelection!!!")
+        
         var editor = vscode.window.activeTextEditor;
         if (!editor) return;
         var totalLines = editor.document.lineCount;
         if(2 * totalLines >= maxIcons) {
             generateImages(maxIcons, 2 * totalLines);
-            decorations = loadImages();
+            loadImages(maxIcons, 2 * totalLines);
             maxIcons = 2 * totalLines;
             context.globalState.update('maxIcons', maxIcons);
         }
         
-        if (showLeftCol == REL) setLeftDecorations();
+        // if (showLeftCol == REL) setLeftDecorations();
+        setLeftDecorations();
+        setRightDecorations();
     });
     
     vscode.commands.registerCommand("vscode-double-line-numbers.abs_rel", () => {
+        // loadImages();
         showLeftCol = ABS;
         showRightCol = REL;
         setLeftDecorations();	
@@ -62,6 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand("vscode-double-line-numbers.rel_abs", () => {
+        // loadImages();
         showLeftCol = REL;
         showRightCol = ABS;
         setLeftDecorations();	
@@ -69,6 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand("vscode-double-line-numbers.abs", () => {
+        // loadImages();
         showLeftCol = OFF;
         showRightCol = ABS;
         setLeftDecorations();	
@@ -76,6 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand("vscode-double-line-numbers.rel", () => {
+        // loadImages();
         showLeftCol = OFF;
         showRightCol = REL;
         setLeftDecorations();	
@@ -83,6 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand("vscode-double-line-numbers.off", () => {
+        // loadImages();
         showLeftCol = OFF;
         showRightCol = OFF;
         setLeftDecorations();	
@@ -107,9 +118,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
         } else if(showLeftCol == REL) {
-            var selection = editor.selection;
-            var text = editor.document.getText(selection);
-
             var line = editor.selection.active.line;
             var totalLines = editor.document.lineCount;
 
@@ -151,17 +159,18 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
-    function loadImages(): vscode.TextEditorDecorationType[] {
-        var ret = [];
-        for (var i = 0; i <= maxIcons; i++) {
-            ret.push(
+    function loadImages(start : number, end : number)/*: vscode.TextEditorDecorationType[] */{
+        // var ret = [];
+        // decorations = [];
+        for (var i = start; i <= end; i++) {
+            decorations.push(
                 vscode.window.createTextEditorDecorationType(<any>{
-                    gutterIconPath: path.join(__dirname, "..", "images", i.toString() + ".png"),
+                    gutterIconPath: OUT_DIR + i.toString() + ".png", // path.join(__dirname, "..", "images", i.toString() + ".png"),
                     gutterIconSize: "cover",
                 })
             )
         }
-        return ret;
+        // return ret;
     }
 
 }
