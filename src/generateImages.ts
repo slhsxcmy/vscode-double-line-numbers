@@ -28,6 +28,7 @@ export function generateImages(start : number, end : number) {
         })
         .toFile(OUT_DIR + i.toString() + ".png", () => { })
 
+        // fs.unlinkSync(OUT_DIR + i.toString() + ".svg"); 
     }
     // console.log("generateImages END" + start + " " + end)
 }

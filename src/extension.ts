@@ -1,67 +1,112 @@
 // TODO: change theme -> regenerate images
 // TODO: save themed images in cache 
-// TODO: generate images from maxIcons to totalLines only
+// TODO: save showLeftCol and showRightCol globally
+// TODO: use TextEditorVisibleRangesChangeEvent, onDidChangeTextEditorVisibleRanges(e)
+// TODO: add sorting to loadImages??
+/*
+    onDidChangeActiveTextEditor         if totalLines changed, might need to generate images
+    onDidChangeTextEditorSelection      if totalLines changed, might need to generate images; if left REL, also need to setLeftDecorations
+    onDidChangeTextEditorVisibleRanges  setLeftDecorations
+    
+    setLeftDecorations      if ABS, set decor for visibleRanges globally; 
+                            if REL, set decor for visibleRanges w.r.t activeLine; 
+    setRightDecorations     set VSCode lineNumbers setting
+    
+*/
 'use strict';
 import * as vscode from 'vscode';
 import { generateImages, OUT_DIR } from "./generateImages";
 
-const OFF = 0;
-const ABS = 1;
-const REL = 2;
+const RESIZE_FACTOR = 2;
 
+const UNDEF = 0;
+const OFF = 1;
+const ABS = 2;
+const REL = 3;
+
+const SHOW_LEFT_COL = 'vscode-double-line-numbers_showLeftCol';
+// const SHOW_RIGHT_COL = 'vscode-double-line-numbers_showRightCol';
+const MAX_ICONS = 'vscode-double-line-numbers_maxIcons';
+
+/* This extension activates on startup */
 export function activate(context: vscode.ExtensionContext) {
-    var decorations: vscode.TextEditorDecorationType[] = [];// = loadImages();
-    var showLeftCol = OFF;
-    var showRightCol = OFF;
-    var maxIcons : number = context.globalState.get('maxIcons') || 1;
-
+    var decorations : vscode.TextEditorDecorationType[];
+    var showLeftCol : number = UNDEF;
+    var showRightCol : number = UNDEF;
+    var maxIcons : number = UNDEF;
+    const editorConfiguration = vscode.workspace.getConfiguration("editor");
+        
     debugResetMaxIcons();
+    init();
+    
  
     function debugResetMaxIcons() {
-        context.globalState.update('maxIcons', 1);
-        console.log("maxIcons reset to " + context.globalState.get('maxIcons'));
+        context.globalState.update(MAX_ICONS, 100);
+        console.log("maxIcons reset to " + context.globalState.get(MAX_ICONS));
     }   
 
-    generateImages(0, maxIcons);
-    loadImages(0, maxIcons);
+    function init() {
+        decorations = [];
+        showLeftCol = context.globalState.get(SHOW_LEFT_COL) || OFF;
+        
+        switch (editorConfiguration.get("lineNumbers")) {
+            case 'off':
+                showRightCol = OFF;
+                break;
+            case 'on':
+                showRightCol = ABS;
+                break;
+            case 'relative':
+                showRightCol = REL;
+                break;
+        }
+
+        maxIcons = context.globalState.get(MAX_ICONS) || 1;
+
+        generateImages(1, maxIcons);
+        loadImages(1, maxIcons);
+    }
+
+    
+    
+    vscode.window.onDidChangeTextEditorVisibleRanges(() => {
+        setLeftDecorations();
+    });
 
     // calculate file length and generate more images if needed
     vscode.window.onDidChangeActiveTextEditor(() => {
+        // console.log("vscode.window.onDidChangeActiveTextEditor")
+
         var editor = vscode.window.activeTextEditor;
         if (!editor) return;
         var totalLines = editor.document.lineCount;
-        if(2 * totalLines > maxIcons) {
-            generateImages(maxIcons, 2 * totalLines);
-            loadImages(maxIcons, 2 * totalLines);
-            maxIcons = 2 * totalLines;
-            context.globalState.update('maxIcons', maxIcons);
+        if(RESIZE_FACTOR * totalLines > maxIcons) {
+            generateImages(maxIcons, RESIZE_FACTOR * totalLines);
+            loadImages(maxIcons, RESIZE_FACTOR * totalLines);
+            maxIcons = RESIZE_FACTOR * totalLines;
+            context.globalState.update(MAX_ICONS, maxIcons);
         }
-
-        setLeftDecorations();
-        setRightDecorations();
     });
 
     // when selecting other lines and in relative mode, set left column
+    // doesn't trigger when entering another editor
     vscode.window.onDidChangeTextEditorSelection(() => {
-        console.log("vscode.window.onDidChangeTextEditorSelection!!!")
+        // console.log("vscode.window.onDidChangeTextEditorSelection!!!")
         
         var editor = vscode.window.activeTextEditor;
         if (!editor) return;
         var totalLines = editor.document.lineCount;
-        if(2 * totalLines >= maxIcons) {
-            generateImages(maxIcons, 2 * totalLines);
-            loadImages(maxIcons, 2 * totalLines);
-            maxIcons = 2 * totalLines;
-            context.globalState.update('maxIcons', maxIcons);
+        if(RESIZE_FACTOR * totalLines > maxIcons) {
+            generateImages(maxIcons, RESIZE_FACTOR * totalLines);
+            loadImages(maxIcons, RESIZE_FACTOR * totalLines);
+            maxIcons = RESIZE_FACTOR * totalLines;
+            context.globalState.update(MAX_ICONS, maxIcons);
         }
-        
-        // if (showLeftCol == REL) setLeftDecorations();
-        setLeftDecorations();
-        setRightDecorations();
+
+        if(showLeftCol == REL) setLeftDecorations();
     });
     
     vscode.commands.registerCommand("vscode-double-line-numbers.abs_rel", () => {
-        // loadImages();
         showLeftCol = ABS;
         showRightCol = REL;
         setLeftDecorations();	
@@ -102,40 +147,85 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Sets Decorations On Left Column 
     function setLeftDecorations(): void {
+        // update global setting
+        switch (showLeftCol) {
+            case OFF:
+                context.globalState.update(SHOW_LEFT_COL, OFF);
+                break;
+            case ABS:
+                context.globalState.update(SHOW_LEFT_COL, ABS);
+                break;
+            case REL:
+                context.globalState.update(SHOW_LEFT_COL, REL);
+                break;
+        }
+
         var editor = vscode.window.activeTextEditor;
         if (!editor) return;
-
         if(showLeftCol == OFF){
             decorations.forEach((d) => {
                 editor?.setDecorations(d, []);
             });
         } else if(showLeftCol == ABS) {
-            var totalLines = editor.document.lineCount;
-            
-            for(var i = 1; i <= maxIcons && i <= totalLines; ++i) {
-                var rangesForDecoration: vscode.Range[] = [new vscode.Range(i-1, 0, i-1, 0)];
+            var visibleStart = editor.visibleRanges[0].start.line;
+            var visibleEnd = editor.visibleRanges[0].end.line;
+
+            console.log("visible: " + visibleStart + " ~ " + visibleEnd);
+
+            for(var i = visibleStart; i <= visibleEnd; ++i){
+                var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
+                
+                // TODO: off by 1
                 editor.setDecorations(decorations[i], rangesForDecoration);
             }
 
+
+            // var totalLines = editor.document.lineCount;
+            
+
+            // for(var i = 1; i <= maxIcons && i <= totalLines; ++i) {
+            //     var rangesForDecoration: vscode.Range[] = [new vscode.Range(i-1, 0, i-1, 0)];
+            //     editor.setDecorations(decorations[i], rangesForDecoration);
+            // }
+
         } else if(showLeftCol == REL) {
-            var line = editor.selection.active.line;
-            var totalLines = editor.document.lineCount;
+            var activeLine = editor.selection.active.line;
+            var visibleStart = editor.visibleRanges[0].start.line;
+            var visibleEnd = editor.visibleRanges[0].end.line;
 
-            for (var delta = 1; delta < maxIcons; delta++) {
-                var rangesForDecoration: vscode.Range[] = [];
+            // if(visibleStart <= visibleEnd && visibleEnd <= activeLine) {
 
-                // Check upwards
-                if (line - delta >= 0) {
-                    rangesForDecoration.push(new vscode.Range(line - delta, 0, line - delta, 0));
-                }
+            // }
+            console.log("visible: " + visibleStart + " ~ " + visibleEnd);
 
-                // Check downwards
-                if (line + delta < totalLines) {
-                    rangesForDecoration.push(new vscode.Range(line + delta, 0, line + delta, 0));
-                }
-
-                editor.setDecorations(decorations[delta], rangesForDecoration);
+            for(var i = visibleStart; i <= visibleEnd; ++i){
+                if(i == activeLine) continue;
+                var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
+                // TODO: currently creating new rangesForDecoration will overwrite the last when editor.setDecorations
+                // rangesForDecoration.push(new vscode.Range(line - delta, 0, line - delta, 0));
+        
+                // TODO: off by 1 ???
+                // console.log("i: " + i + " Math.abs(activeLine - i):" )
+                editor.setDecorations(decorations[Math.abs(activeLine - i) - 1], rangesForDecoration);
             }
+
+            // var totalLines = editor.document.lineCount;
+
+            // for (var delta = 1; delta < maxIcons; delta++) {
+            //     var rangesForDecoration: vscode.Range[] = [];
+
+            //     // Check upwards
+            //     if (line - delta >= 0) {
+            //         rangesForDecoration.push(new vscode.Range(line - delta, 0, line - delta, 0));
+            //     }
+
+            //     // Check downwards
+            //     if (line + delta < totalLines) {
+            //         rangesForDecoration.push(new vscode.Range(line + delta, 0, line + delta, 0));
+            //     }
+
+            //     editor.setDecorations(decorations[delta], rangesForDecoration);
+            // }
 
         } 
         
@@ -144,17 +234,17 @@ export function activate(context: vscode.ExtensionContext) {
     // Updates "editor.lineNumbers" in settings.json
     function setRightDecorations(): void {
         
-        const configuration = vscode.workspace.getConfiguration("editor");
+        // const configuration = vscode.workspace.getConfiguration("editor");
 
         switch (showRightCol) {
             case OFF:
-                configuration.update("lineNumbers", "off", vscode.ConfigurationTarget.Global);
+                editorConfiguration.update("lineNumbers", "off", vscode.ConfigurationTarget.Global);
                 break;
             case ABS:
-                configuration.update("lineNumbers", "on", vscode.ConfigurationTarget.Global);
+                editorConfiguration.update("lineNumbers", "on", vscode.ConfigurationTarget.Global);
                 break;
             case REL:
-                configuration.update("lineNumbers", "relative", vscode.ConfigurationTarget.Global);
+                editorConfiguration.update("lineNumbers", "relative", vscode.ConfigurationTarget.Global);
                 break;
         }
     }
