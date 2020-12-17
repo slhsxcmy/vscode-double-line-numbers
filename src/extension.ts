@@ -30,23 +30,28 @@ const MAX_ICONS = 'vscode-double-line-numbers_maxIcons';
 
 /* This extension activates on startup */
 export function activate(context: vscode.ExtensionContext) {
-    var decorations : vscode.TextEditorDecorationType[];
+    // var decorations : vscode.TextEditorDecorationType[];
+    var decorations : Map<string, vscode.TextEditorDecorationType>;
+    // var rangesForDecoration : vscode.Range [];
     var showLeftCol : number = UNDEF;
     var showRightCol : number = UNDEF;
     var maxIcons : number = UNDEF;
     const editorConfiguration = vscode.workspace.getConfiguration("editor");
         
-    debugResetMaxIcons();
+    debug();
     init();
     
  
-    function debugResetMaxIcons() {
+    function debug() {
         context.globalState.update(MAX_ICONS, 100);
-        console.log("maxIcons reset to " + context.globalState.get(MAX_ICONS));
+        console.log("debug: maxIcons reset to " + context.globalState.get(MAX_ICONS));
+        // context.globalState.update(SHOW_LEFT_COL, ABS);
+        // showLeftCol = ABS;
+        // console.log("debug: showLeftCol set to " + context.globalState.get(SHOW_LEFT_COL));
     }   
 
     function init() {
-        decorations = [];
+        decorations = new Map();
         showLeftCol = context.globalState.get(SHOW_LEFT_COL) || OFF;
         
         switch (editorConfiguration.get("lineNumbers")) {
@@ -65,6 +70,8 @@ export function activate(context: vscode.ExtensionContext) {
 
         generateImages(1, maxIcons);
         loadImages(1, maxIcons);
+
+        // setLeftDecorations();
     }
 
     
@@ -86,6 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
             maxIcons = RESIZE_FACTOR * totalLines;
             context.globalState.update(MAX_ICONS, maxIcons);
         }
+        setLeftDecorations();
     });
 
     // when selecting other lines and in relative mode, set left column
@@ -103,7 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
             context.globalState.update(MAX_ICONS, maxIcons);
         }
 
-        if(showLeftCol == REL) setLeftDecorations();
+        /*if(showLeftCol == REL) */setLeftDecorations();
     });
     
     vscode.commands.registerCommand("vscode-double-line-numbers.abs_rel", () => {
@@ -160,23 +168,26 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
         }
 
-        var editor = vscode.window.activeTextEditor;
+        var editor = vscode.window.activeTextEditor!;
         if (!editor) return;
         if(showLeftCol == OFF){
+            // always clear all existing decor first
             decorations.forEach((d) => {
-                editor?.setDecorations(d, []);
+                editor.setDecorations(d, []);
             });
-        } else if(showLeftCol == ABS) {
+        } else 
+        if(showLeftCol == ABS) {
             var visibleStart = editor.visibleRanges[0].start.line;
             var visibleEnd = editor.visibleRanges[0].end.line;
 
-            console.log("visible: " + visibleStart + " ~ " + visibleEnd);
+            // console.log("visible: " + visibleStart + " ~ " + visibleEnd);
 
             for(var i = visibleStart; i <= visibleEnd; ++i){
                 var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
                 
-                // TODO: off by 1
-                editor.setDecorations(decorations[i], rangesForDecoration);
+                var decor = decorations.get(getImagePath(i+1))!;
+                console.log("i: " + i + " decor: " + decor );
+                editor.setDecorations(decor, rangesForDecoration);
             }
 
 
@@ -196,17 +207,23 @@ export function activate(context: vscode.ExtensionContext) {
             // if(visibleStart <= visibleEnd && visibleEnd <= activeLine) {
 
             // }
-            console.log("visible: " + visibleStart + " ~ " + visibleEnd);
+            // console.log("visible: " + visibleStart + " ~ " + visibleEnd);
 
             for(var i = visibleStart; i <= visibleEnd; ++i){
                 if(i == activeLine) continue;
+                
+                // IMPORTANT: if the same number shows on two lines (activeLine between visibleStart and visibleEnd),
+                // we must use one rangesForDecoration for them, otherwise the latter one overwrites the first
+                
                 var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
-                // TODO: currently creating new rangesForDecoration will overwrite the last when editor.setDecorations
-                // rangesForDecoration.push(new vscode.Range(line - delta, 0, line - delta, 0));
-        
-                // TODO: off by 1 ???
+                // reflect i across activeLine
+                if(visibleStart <= 2*activeLine - i && 2*activeLine - i <= visibleEnd) {
+                    rangesForDecoration.push(new vscode.Range(2*activeLine - i, 0, 2*activeLine - i, 0));
+                }
+
                 // console.log("i: " + i + " Math.abs(activeLine - i):" )
-                editor.setDecorations(decorations[Math.abs(activeLine - i) - 1], rangesForDecoration);
+                var decor = decorations.get(getImagePath(Math.abs(activeLine - i)))!;
+                editor.setDecorations(decor, rangesForDecoration);
             }
 
             // var totalLines = editor.document.lineCount;
@@ -253,16 +270,22 @@ export function activate(context: vscode.ExtensionContext) {
         // var ret = [];
         // decorations = [];
         for (var i = start; i <= end; i++) {
-            decorations.push(
-                vscode.window.createTextEditorDecorationType(<any>{
-                    gutterIconPath: OUT_DIR + i.toString() + ".png", // path.join(__dirname, "..", "images", i.toString() + ".png"),
+            decorations.set(getImagePath(i),
+                vscode.window.createTextEditorDecorationType({
+                    gutterIconPath: getImagePath(i), // path.join(__dirname, "..", "images", i.toString() + ".png"),
                     gutterIconSize: "cover",
                 })
             )
         }
         // return ret;
+
+
     }
 
+    // helper
+    function getImagePath(i : number) {
+        return OUT_DIR + i.toString() + ".png";
+    }
 }
 
 export function deactivate() {}
