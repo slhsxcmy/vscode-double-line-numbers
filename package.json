@@ -1,8 +1,10 @@
 {
+	"_comment": "TODO: activationEvents\": [\"onCommand:vscode-double-line-numbers.helloWorld\"],",
 	"name": "vscode-double-line-numbers",
 	"displayName": "Double Line Numbers",
 	"description": "",
 	"version": "0.0.1",
+	"publisher": "slhsxcmy",
 	"engines": {
 		"vscode": "^1.52.0"
 	},
@@ -10,14 +12,26 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-double-line-numbers.helloWorld"
+		"*"  
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "vscode-double-line-numbers.helloWorld",
-				"title": "Hello World"
+				"command": "vscode-double-line-numbers.abs_rel",
+				"title": "Double Line Numbers: Absolute + Relative"
+			}, {
+				"command": "vscode-double-line-numbers.rel_abs",
+				"title": "Double Line Numbers: Relative + Absolute"
+			}, {
+				"command": "vscode-double-line-numbers.abs",
+				"title": "Double Line Numbers: Absolute"
+			}, {
+				"command": "vscode-double-line-numbers.rel",
+				"title": "Double Line Numbers: Relative"
+			}, {
+				"command": "vscode-double-line-numbers.off",
+				"title": "Double Line Numbers: Off"
 			}
 		]
 	},

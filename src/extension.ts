@@ -1,27 +1,74 @@
+'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+const MAX_ICONS = 99;
+const OFF = 0;
+const ABS = 1;
+const REL = 2;
+
 export function activate(context: vscode.ExtensionContext) {
+	
+	var showLeftCol = OFF;
+	var showRightCol = OFF;
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-double-line-numbers" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-double-line-numbers.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Double Line Numbers!');
+	vscode.commands.registerCommand("vscode-double-line-numbers.abs_rel", () => {
+		showLeftCol = ABS;
+		showRightCol = REL;
+		setLeftDecorations();	
+		setRightDecorations();	
 	});
 
-	context.subscriptions.push(disposable);
+	vscode.commands.registerCommand("vscode-double-line-numbers.rel_abs", () => {
+		showLeftCol = REL;
+		showRightCol = ABS;
+		setLeftDecorations();	
+		setRightDecorations();	
+	});
+
+	vscode.commands.registerCommand("vscode-double-line-numbers.abs", () => {
+		showLeftCol = OFF;
+		showRightCol = ABS;
+		setLeftDecorations();	
+		setRightDecorations();	
+	});
+
+	vscode.commands.registerCommand("vscode-double-line-numbers.rel", () => {
+		showLeftCol = OFF;
+		showRightCol = REL;
+		setLeftDecorations();	
+		setRightDecorations();	
+	});
+
+	vscode.commands.registerCommand("vscode-double-line-numbers.off", () => {
+		showLeftCol = OFF;
+		showRightCol = OFF;
+		setLeftDecorations();	
+		setRightDecorations();	
+	});
+
+	// TODO
+	function setLeftDecorations(): void {
+        
+	}
+	
+	function setRightDecorations(): void {
+		
+		const configuration = vscode.workspace.getConfiguration("editor");
+
+		switch (showRightCol) {
+			case OFF:
+				configuration.update("lineNumbers", "off", vscode.ConfigurationTarget.Global);
+				break;
+			case ABS:
+				configuration.update("lineNumbers", "on", vscode.ConfigurationTarget.Global);
+				break;
+			case REL:
+				configuration.update("lineNumbers", "relative", vscode.ConfigurationTarget.Global);
+				break;
+		}
+    }
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
