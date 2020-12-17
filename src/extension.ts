@@ -4,39 +4,53 @@
 'use strict';
 import * as vscode from 'vscode';
 import * as path from "path";
+import { generateImages } from "./generateImages";
 
-// import { generateImages } from "./generate-images";
-// const gen = require('generate-images');
-
-// const MAX_ICONS = 99;
 const OFF = 0;
 const ABS = 1;
 const REL = 2;
-const OUT_DIR = "test_images/"  // must end with /
-const WIDTH = 200
-const HEIGHT = 200
 
 export function activate(context: vscode.ExtensionContext) {
-    var decorations: vscode.TextEditorDecorationType[] = loadImages();
+    var decorations: vscode.TextEditorDecorationType[];// = loadImages();
     var showLeftCol = OFF;
     var showRightCol = OFF;
     var maxIcons : number = context.globalState.get('maxIcons') || 1;
+
+    debugResetMaxIcons();
+ 
+    function debugResetMaxIcons() {
+        context.globalState.update('maxIcons', 5);
+        console.log("maxIcons reset to " + context.globalState.get('maxIcons'));
+    }   
+
+    generateImages(0, maxIcons);
+    decorations = loadImages();
 
     // calculate file length and generate more images if needed
     vscode.window.onDidChangeActiveTextEditor(() => {
         var editor = vscode.window.activeTextEditor;
         if (!editor) return;
         var totalLines = editor.document.lineCount;
-        console.log(maxIcons + " " + totalLines);
-        if(totalLines > maxIcons) {
-            // generateImages(maxIcons + 1, totalLines);  // x2?
-            maxIcons = totalLines;
+        if(2 * totalLines >= maxIcons) {
+            generateImages(maxIcons, 2 * totalLines);
+            decorations = loadImages();
+            maxIcons = 2 * totalLines;
             context.globalState.update('maxIcons', maxIcons);
         }
     });
 
     // when selecting other lines and in relative mode, set left column
     vscode.window.onDidChangeTextEditorSelection(() => {
+        var editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        var totalLines = editor.document.lineCount;
+        if(2 * totalLines >= maxIcons) {
+            generateImages(maxIcons, 2 * totalLines);
+            decorations = loadImages();
+            maxIcons = 2 * totalLines;
+            context.globalState.update('maxIcons', maxIcons);
+        }
+        
         if (showLeftCol == REL) setLeftDecorations();
     });
     
