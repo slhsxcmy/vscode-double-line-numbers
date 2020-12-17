@@ -1,22 +1,43 @@
+// TODO: change theme -> regenerate images
+// TODO: save themed images in cache 
+// TODO: generate images from maxIcons to totalLines only
 'use strict';
 import * as vscode from 'vscode';
 import * as path from "path";
 
-const MAX_ICONS = 99;
+// import { generateImages } from "./generate-images";
+// const gen = require('generate-images');
+
+// const MAX_ICONS = 99;
 const OFF = 0;
 const ABS = 1;
 const REL = 2;
+const OUT_DIR = "test_images/"  // must end with /
+const WIDTH = 200
+const HEIGHT = 200
 
 export function activate(context: vscode.ExtensionContext) {
-    var decorations: vscode.TextEditorDecorationType[] = createDecorations();
+    var decorations: vscode.TextEditorDecorationType[] = loadImages();
     var showLeftCol = OFF;
     var showRightCol = OFF;
+    var maxIcons : number = context.globalState.get('maxIcons') || 1;
 
-    vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
-        if (showLeftCol == OFF) return;
+    // calculate file length and generate more images if needed
+    vscode.window.onDidChangeActiveTextEditor(() => {
+        var editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        var totalLines = editor.document.lineCount;
+        console.log(maxIcons + " " + totalLines);
+        if(totalLines > maxIcons) {
+            // generateImages(maxIcons + 1, totalLines);  // x2?
+            maxIcons = totalLines;
+            context.globalState.update('maxIcons', maxIcons);
+        }
+    });
 
-        setLeftDecorations();
-        // setRightDecorations();
+    // when selecting other lines and in relative mode, set left column
+    vscode.window.onDidChangeTextEditorSelection(() => {
+        if (showLeftCol == REL) setLeftDecorations();
     });
     
     vscode.commands.registerCommand("vscode-double-line-numbers.abs_rel", () => {
@@ -66,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
         } else if(showLeftCol == ABS) {
             var totalLines = editor.document.lineCount;
             
-            for(var i = 1; i <= MAX_ICONS && i <= totalLines; ++i) {
+            for(var i = 1; i <= maxIcons && i <= totalLines; ++i) {
                 var rangesForDecoration: vscode.Range[] = [new vscode.Range(i-1, 0, i-1, 0)];
                 editor.setDecorations(decorations[i], rangesForDecoration);
             }
@@ -78,7 +99,7 @@ export function activate(context: vscode.ExtensionContext) {
             var line = editor.selection.active.line;
             var totalLines = editor.document.lineCount;
 
-            for (var delta = 1; delta < MAX_ICONS; delta++) {
+            for (var delta = 1; delta < maxIcons; delta++) {
                 var rangesForDecoration: vscode.Range[] = [];
 
                 // Check upwards
@@ -96,19 +117,6 @@ export function activate(context: vscode.ExtensionContext) {
 
         } 
         
-    }
-    
-    function createDecorations(): vscode.TextEditorDecorationType[] {
-        var ret = [];
-        for (var i = 0; i <= MAX_ICONS; i++) {
-            ret.push(
-                vscode.window.createTextEditorDecorationType(<any>{
-                    gutterIconPath: path.join(__dirname, "..", "images", i.toString() + ".png"),
-                    gutterIconSize: "cover",
-                })
-            )
-        }
-        return ret;
     }
 
     // Updates "editor.lineNumbers" in settings.json
@@ -128,6 +136,20 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
         }
     }
+
+    function loadImages(): vscode.TextEditorDecorationType[] {
+        var ret = [];
+        for (var i = 0; i <= maxIcons; i++) {
+            ret.push(
+                vscode.window.createTextEditorDecorationType(<any>{
+                    gutterIconPath: path.join(__dirname, "..", "images", i.toString() + ".png"),
+                    gutterIconSize: "cover",
+                })
+            )
+        }
+        return ret;
+    }
+
 }
 
 export function deactivate() {}
