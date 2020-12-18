@@ -6,7 +6,7 @@
 // FIXME: the top and bottom of the page missings half a line number
 /*
     onDidChangeActiveTextEditor         if totalLines changed, might need to generate images
-    onDidChangeTextEditorSelection      if totalLines changed, might need to generate images; if left REL, also need to setLeftDecorations
+    onDidChangeTextEditorSelection      if totalLines changed, might need to generate images and setLeftDecorations for new lines
     onDidChangeTextEditorVisibleRanges  setLeftDecorations
     
     setLeftDecorations      if ABS, set decor for visibleRanges globally; 
@@ -77,37 +77,28 @@ export function activate(context: vscode.ExtensionContext) {
         setRightDecorations();
     }
 
-    // TODO: test generating images
     // Seems like onDidChangeTextEditorVisibleRanges is triggered before the two others
-    // So we might have to update maxIcons here too???
-    // FIXME: if uncommented, enter shows all 1's
+    // So we might have to update maxIcons here too? Seem unnecessary
     vscode.window.onDidChangeTextEditorVisibleRanges(() => {
-        // var editor = vscode.window.activeTextEditor;
-        // if (!editor) return;
-        // var totalLines = editor.document.lineCount;
-        // if(RESIZE_FACTOR * totalLines > maxIcons) {
-        //     generateImages(maxIcons, RESIZE_FACTOR * totalLines);
-        //     loadImages(maxIcons, RESIZE_FACTOR * totalLines);
-        //     maxIcons = RESIZE_FACTOR * totalLines;
-        //     context.globalState.update(MAX_ICONS, maxIcons);
-        // }
+        // works now without calling generateImages with RESIZE_FACTOR == 2
         setLeftDecorations();
     });
 
+    // for switching editor to a long file
     // calculate file length and generate more images if needed
-    // TODO: for switching editor
     vscode.window.onDidChangeActiveTextEditor(() => {
-        // console.log("vscode.window.onDidChangeActiveTextEditor")
-
-        // var editor = vscode.window.activeTextEditor;
-        // if (!editor) return;
-        // var totalLines = editor.document.lineCount;
-        // if(RESIZE_FACTOR * totalLines > maxIcons) {
-        //     generateImages(maxIcons, RESIZE_FACTOR * totalLines);
-        //     loadImages(maxIcons, RESIZE_FACTOR * totalLines);
-        //     maxIcons = RESIZE_FACTOR * totalLines;
-        //     context.globalState.update(MAX_ICONS, maxIcons);
-        // }
+        // switching editor works with RESIZE_FACTOR == 2
+        // works now because of changes elsewhere
+        // wasn't working, had duplicate numbers
+        var editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        var totalLines = editor.document.lineCount;
+        if(RESIZE_FACTOR * totalLines > maxIcons) {
+            generateImages(maxIcons, RESIZE_FACTOR * totalLines);
+            loadImages(maxIcons, RESIZE_FACTOR * totalLines);
+            maxIcons = RESIZE_FACTOR * totalLines;
+            context.globalState.update(MAX_ICONS, maxIcons);
+        }
         setLeftDecorations();
     });
 
@@ -115,28 +106,19 @@ export function activate(context: vscode.ExtensionContext) {
     // this method doesn't trigger upon entering another editor
     vscode.window.onDidChangeTextEditorSelection(() => {
         // single editor works now with RESIZE_FACTOR == 2
+        // works now because of changes elsewhere
+        // wasn't working, had duplicate numbers
         var editor = vscode.window.activeTextEditor;
         if (!editor) return;
         var totalLines = editor.document.lineCount;
         if(RESIZE_FACTOR * totalLines > maxIcons) {
+            generateImages(maxIcons, RESIZE_FACTOR * totalLines);
+            loadImages(maxIcons, RESIZE_FACTOR * totalLines);
             maxIcons = RESIZE_FACTOR * totalLines;
-            console.log("maxIcons: " + maxIcons)
-            generateImages(1, maxIcons);
-            loadImages(1, maxIcons);
             context.globalState.update(MAX_ICONS, maxIcons);
         }
 
-
-        // var editor = vscode.window.activeTextEditor;
-        // if (!editor) return;
-        // var totalLines = editor.document.lineCount;
-        // if(RESIZE_FACTOR * totalLines > maxIcons) {
-        //     generateImages(maxIcons, RESIZE_FACTOR * totalLines);
-        //     loadImages(maxIcons, RESIZE_FACTOR * totalLines);
-        //     maxIcons = RESIZE_FACTOR * totalLines;
-        //     context.globalState.update(MAX_ICONS, maxIcons);
-        // }
-
+        // TODO: might need to add if (totalLines changed)? might be redundant
         setLeftDecorations();
     });
 
@@ -187,7 +169,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Sets Decorations On Left Column 
     function setLeftDecorations(): void {
         console.log("IN setLeftDecorations, maxIcons : " + maxIcons)
-        // always clear all existing decor seem to work for switching modes
+        // always clear all existing decor; seem to work for switching modes
         clearLeftDecorations();
         // update global storage
         switch (showLeftCol) {
@@ -204,7 +186,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         var editor = vscode.window.activeTextEditor!;
         if (!editor) return;
-        // if(showLeftCol == OFF) {
+        // if(showLeftCol == OFF) {  // redundant
         //     // TODO: always clear all existing decor first???
         //     // decorations.forEach((d) => {
         //     //     editor.setDecorations(d, []);
