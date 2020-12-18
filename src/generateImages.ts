@@ -17,6 +17,17 @@ if (!fs.existsSync(OUT_DIR)){
 export function generateImages(start : number, end : number) {
     // console.log("generateImages START" + start + " " + end)
     
+    const svg = textToSVG.getSVG('', options);
+    fs.writeFileSync(OUT_DIR + '0' + ".svg", svg);
+    
+    sharp(OUT_DIR + '0' + ".svg")
+    .resize(SIZE, SIZE, {
+        fit: 'contain',
+        background: { r: 255, g: 255, b: 255, alpha: 0 }
+    })
+    .toFile(OUT_DIR + '0' + ".png", () => { })
+
+
     for(var i = start; i < end; ++i) {
         const svg = textToSVG.getSVG(i.toString(), options);
         fs.writeFileSync(OUT_DIR + i.toString() + ".svg", svg);
