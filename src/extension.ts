@@ -3,6 +3,9 @@
 // TODO: save showLeftCol and showRightCol globally
 // TODO: use TextEditorVisibleRangesChangeEvent, onDidChangeTextEditorVisibleRanges(e)
 // TODO: add sorting to loadImages??
+// TODO: setting ABS+REL, enter, shows all 1's
+// TODO: try reading images on the fly???
+// FIXME: entering new lines before extension loads will not load image later
 /*
     onDidChangeActiveTextEditor         if totalLines changed, might need to generate images
     onDidChangeTextEditorSelection      if totalLines changed, might need to generate images; if left REL, also need to setLeftDecorations
@@ -43,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
     
  
     function debug() {
-        context.globalState.update(MAX_ICONS, 100);
+        context.globalState.update(MAX_ICONS, 1);
         console.log("debug: maxIcons reset to " + context.globalState.get(MAX_ICONS));
         // context.globalState.update(SHOW_LEFT_COL, ABS);
         // showLeftCol = ABS;
@@ -71,12 +74,24 @@ export function activate(context: vscode.ExtensionContext) {
         generateImages(1, maxIcons);
         loadImages(1, maxIcons);
 
-        // setLeftDecorations();
+        setLeftDecorations();
+        setRightDecorations();
     }
 
     
-    
+    // Seems like onDidChangeTextEditorVisibleRanges is triggered before the two others
+    // So we might have to update maxIcons here too???
+    // TODO: Bug: if uncommented, enter shows all 1's
     vscode.window.onDidChangeTextEditorVisibleRanges(() => {
+        // var editor = vscode.window.activeTextEditor;
+        // if (!editor) return;
+        // var totalLines = editor.document.lineCount;
+        // if(RESIZE_FACTOR * totalLines > maxIcons) {
+        //     generateImages(maxIcons, RESIZE_FACTOR * totalLines);
+        //     loadImages(maxIcons, RESIZE_FACTOR * totalLines);
+        //     maxIcons = RESIZE_FACTOR * totalLines;
+        //     context.globalState.update(MAX_ICONS, maxIcons);
+        // }
         setLeftDecorations();
     });
 
@@ -171,7 +186,7 @@ export function activate(context: vscode.ExtensionContext) {
         var editor = vscode.window.activeTextEditor!;
         if (!editor) return;
         if(showLeftCol == OFF){
-            // always clear all existing decor first
+            // always clear all existing decor first???
             decorations.forEach((d) => {
                 editor.setDecorations(d, []);
             });
@@ -186,7 +201,8 @@ export function activate(context: vscode.ExtensionContext) {
                 var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
                 
                 var decor = decorations.get(getImagePath(i+1))!;
-                console.log("i: " + i + " decor: " + decor );
+                // console.log(getImagePath(i+1))
+                // console.log(JSON.stringify(decor));
                 editor.setDecorations(decor, rangesForDecoration);
             }
 
@@ -204,10 +220,11 @@ export function activate(context: vscode.ExtensionContext) {
             var visibleStart = editor.visibleRanges[0].start.line;
             var visibleEnd = editor.visibleRanges[0].end.line;
 
-            // if(visibleStart <= visibleEnd && visibleEnd <= activeLine) {
-
-            // }
+            // TODO: reset decor for activeLine
+            // editor.setDecorations(decorations.get(getImagePath(activeLine)), []);
+            
             // console.log("visible: " + visibleStart + " ~ " + visibleEnd);
+
 
             for(var i = visibleStart; i <= visibleEnd; ++i){
                 if(i == activeLine) continue;
@@ -221,8 +238,13 @@ export function activate(context: vscode.ExtensionContext) {
                     rangesForDecoration.push(new vscode.Range(2*activeLine - i, 0, 2*activeLine - i, 0));
                 }
 
+                
                 // console.log("i: " + i + " Math.abs(activeLine - i):" )
                 var decor = decorations.get(getImagePath(Math.abs(activeLine - i)))!;
+         
+                console.log(getImagePath(i+1))
+                console.log(JSON.stringify(decor));
+
                 editor.setDecorations(decor, rangesForDecoration);
             }
 
@@ -278,7 +300,6 @@ export function activate(context: vscode.ExtensionContext) {
             )
         }
         // return ret;
-
 
     }
 
