@@ -11,3 +11,6 @@ vsc-extension-quickstart.md
 **/*.ts
 
 out/images/**
+node_modules
+out/
+webpack.config.js

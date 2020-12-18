@@ -7,10 +7,10 @@
 
 ## [0.0.2] - 2020-12-18
 ### Added
-- Icon
+- Extension Icon
 
 ### Changed
-- Bundled with webpack so no more copying node_modules
+- Bundled with webpack so no more distributing node_modules
 
 ## [Unreleased]
 - Bug fixes
