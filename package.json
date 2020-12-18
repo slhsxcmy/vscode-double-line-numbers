@@ -1,11 +1,11 @@
 {
 	"name": "vscode-double-line-numbers",
 	"displayName": "Double Line Numbers",
-	"description": "Show both absolute and relative line numbers.",
+	"description": "Display both absolute and relative line numbers.",
 	"version": "0.0.1",
 	"publisher": "slhsxcmy",
 	"engines": {
-		"vscode": "^1.52.0"
+		"vscode": "^1.6.0"
 	},
 	"categories": [
 		"Other"

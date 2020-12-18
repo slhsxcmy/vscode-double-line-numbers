@@ -47,7 +47,7 @@ The images are generated using the `text-to-svg` and `sharp` libaries.
 
 ### 0.0.1
 - Initial version of Double Line Numbers
-- Basic 2 columns of line number display 
+- Supports 5 commands to adjust line numbers
 
 ## License
 
