@@ -1,3 +1,4 @@
+// FIXME: Missing chunks of numbers when pasting quickly
 // TODO: change theme -> regenerate images
 // TODO: save themed images for later
 // Fixed: ABS+REL -> REL+ABS some high ABS line numbers remains but can be refreshed if we selected past it: fixed by adding 0
@@ -101,7 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
         setLeftDecorations();
     });
 
-    // when selecting other lines and in relative mode, set left column
+    // when selecting different lines or creating new lines
     // this method doesn't trigger upon entering another editor
     vscode.window.onDidChangeTextEditorSelection(() => {
         // single editor works now with RESIZE_FACTOR == 2
@@ -117,7 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
             context.globalState.update(MAX_ICONS, maxIcons);
         }
 
-        // add if (totalLines changed)? might be redundant
+        // add if(totalLines changed)? might be redundant
         setLeftDecorations();
     });
 

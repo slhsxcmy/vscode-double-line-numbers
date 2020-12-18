@@ -61,6 +61,7 @@
 		"vscode-test": "^1.4.1"
 	},
 	"dependencies": {
+		"gm": "^1.23.1",
 		"sharp": "^0.26.3",
 		"text-to-svg": "^3.1.5",
 		"vectorize-text": "^3.2.1"
