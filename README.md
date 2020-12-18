@@ -1,65 +1,54 @@
-# vscode-double-line-numbers README
+# Double Line Numbers
 
-This is the README for your extension "vscode-double-line-numbers". After writing up a brief description, we recommend including the following sections.
+This is a Visual Studio Code extension that allows you adjust the display of line numbers to a combination of absolute and relative settings. 
 
-## Features
+This should be helpful if you use one of the Vim plugins [VSCodeVim](#https://github.com/VSCodeVim/Vim), or are learning Vim like me.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Installation
 
-For example if there is an image subfolder under your extension project workspace:
+- Open the command palette in Visual Studio Code (`Ctrl-Shift-P` or `Cmd-Shift-P`)
+- Select `Extension: Install Extension` and search for 'Double Line Numbers'
 
-\!\[feature X\]\(images/feature-x.png\)
+## Commands
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Open the command palette and run one of the following commands:
 
-## Requirements
+- __Double Line Numbers: Absolute + Relative__ - show absolute line numbers on the left and relative line numbers on the right.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- __Double Line Numbers: Relative + Absolute__ - show relative line numbers on the left and absolute line numbers on the right.
 
-## Extension Settings
+- __Double Line Numbers: Absolute__ - only show absolute line numbers, essentially setting the built-in setting `editor.lineNumbers` to `on`.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- __Double Line Numbers: Relative__ - only show relative line numbers, essentially setting the built-in setting `editor.lineNumbers` to `relative`.
 
-For example:
+- __Double Line Numbers: Off__ - turn off all line numbers, essentially setting the built-in setting `editor.lineNumbers` to `off`.
 
-This extension contributes the following settings:
+## Source
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+[Github](https://github.com/slhsxcmy/vscode-double-line-numbers/)
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+When rapidly increasing the file size for the first time, e.g. pasting a very long file or opening a very long file, certain images might glitch and show as blanks.
+At 10,000 lines, generating images can become very slow.
+
+## Technical Note
+
+The Visual Studio Code API doesn't support a great way to display anything on the left of the built-in line numbers. "gutterIcon" is used to the numbers as images, but might break or overlap display with other functionality that uses the gutter such as debugging. In that case, you can turn the left column off with one of the last three commands.
+
+Any feedback or ideas are appreciated. If you find any bugs, please let me know through issues!
+
+## Acknowledgment
+
+This extension is inspired by extr0py's Relative Line Numbers.
+The images are generated using the `text-to-svg` and `sharp` libaries. 
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
+- Initial version of Double Line Numbers
+- Basic 2 columns of line number display 
 
-### 1.0.0
+## License
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+[GPL Version 3](LICENSE.md)

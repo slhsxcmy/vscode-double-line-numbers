@@ -1,9 +1,12 @@
-// FIXME: Missing chunks of numbers when pasting quickly
+// FIXME: Missing chunks of numbers (even half of a number) when pasting/entering quickly (before loading finish?); because vscode cannot load image so fast???
+// The unloaded image is related to exact numbers, thus switching modes will miss same numbers
+// TODO: make sure loadImages have no overlap or reload the same image is OK
 // TODO: change theme -> regenerate images
 // TODO: save themed images for later
 // Fixed: ABS+REL -> REL+ABS some high ABS line numbers remains but can be refreshed if we selected past it: fixed by adding 0
 // Fixed: REL+ABS -> ABS+REL give wrong number 0 on the selected line: either not load 0, or call clearLeftDecorations() first
 // Fixed: top and bottom of page missing half a line number: check 1 more line in setLeftDecorations
+// Known issue: MAX_ICONS_DEFAULT == 1 -> no number shown on startup
 /*
     onDidChangeActiveTextEditor         if totalLines changed, might need to generate images
     onDidChangeTextEditorSelection      if totalLines changed, might need to generate images and setLeftDecorations for new lines
@@ -22,7 +25,7 @@ import * as vscode from 'vscode';
 import { generateImages, OUT_DIR } from "./generateImages";
 
 const RESIZE_FACTOR = 2;
-const MAX_ICONS_DEFAULT = 10;
+const MAX_ICONS_DEFAULT = 1000;
 const UNDEF = -1;
 
 const SHOW_LEFT_COL = 'vscode-double-line-numbers_showLeftCol';
@@ -30,20 +33,17 @@ const MAX_ICONS = 'vscode-double-line-numbers_maxIcons';
 
 /* This extension activates on startup */
 export function activate(context: vscode.ExtensionContext) {
-    // var decorations : vscode.TextEditorDecorationType[];
     var decorationMap : Map<number, vscode.TextEditorDecorationType>;
     var decorationRanges : Map<number, vscode.Range[]>; 
-    // var rangesForDecoration : vscode.Range [];
     var showLeftCol : number = UNDEF;
     var showRightCol : number = UNDEF;
     var maxIcons : number = UNDEF;
     const editorConfiguration = vscode.workspace.getConfiguration("editor");
         
-    debug();
+    // debugInit();
     init();
-    
  
-    function debug() {
+    function debugInit() {
         context.globalState.update(MAX_ICONS, MAX_ICONS_DEFAULT);
         console.log("debug: maxIcons reset to " + context.globalState.get(MAX_ICONS));
         // context.globalState.update(SHOW_LEFT_COL, ABS);
@@ -69,7 +69,11 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         maxIcons = context.globalState.get(MAX_ICONS) || MAX_ICONS_DEFAULT;
-        
+        if(maxIcons < MAX_ICONS_DEFAULT) {
+            maxIcons = MAX_ICONS_DEFAULT;
+            context.globalState.update(MAX_ICONS, maxIcons);
+        }
+
         generateImages(0, maxIcons);
         loadImages(0, maxIcons);
 
@@ -105,6 +109,7 @@ export function activate(context: vscode.ExtensionContext) {
     // when selecting different lines or creating new lines
     // this method doesn't trigger upon entering another editor
     vscode.window.onDidChangeTextEditorSelection(() => {
+        // I think vscode duplicates decor on current selection first before updating any decor, thus a little flashing
         // single editor works now with RESIZE_FACTOR == 2
         // works now because of changes elsewhere
         // wasn't working, had duplicate numbers
@@ -118,7 +123,7 @@ export function activate(context: vscode.ExtensionContext) {
             context.globalState.update(MAX_ICONS, maxIcons);
         }
 
-        // add if(totalLines changed)? might be redundant
+        // add if(totalLines changed)?? might be redundant
         setLeftDecorations();
     });
 
@@ -158,6 +163,7 @@ export function activate(context: vscode.ExtensionContext) {
         setRightDecorations();	
     });
 
+    // helper
     function clearLeftDecorations() {
         var editor = vscode.window.activeTextEditor!;
         if (!editor) return;
@@ -168,7 +174,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Sets Decorations On Left Column 
     function setLeftDecorations(): void {
-        // console.log("IN setLeftDecorations, maxIcons : " + maxIcons)
+       
         // always clear all existing decor; seem to work for switching modes
         clearLeftDecorations();
         // update global storage
@@ -194,48 +200,28 @@ export function activate(context: vscode.ExtensionContext) {
         if(showLeftCol == vscode.TextEditorLineNumbersStyle.On) {
             var visibleStart = editor.visibleRanges[0].start.line;
             var visibleEnd = editor.visibleRanges[0].end.line;
-
-            console.log("visible: " + visibleStart + " ~ " + visibleEnd);
             var totalLines = editor.document.lineCount;
+            
             //          must check 0                        seem redundant but just be safe
             for(var i = Math.max(visibleStart - 1, 0); i <= Math.min(visibleEnd + 1, totalLines - 1); ++i){
-                    // var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
-                // var range = decorationRanges.get(i+1);
-                // if(!range) continue;  // ???
                 var decor = decorationMap.get(i+1);
                 if(!decor) continue;  // seem to work
                 
                 var range = [new vscode.Range(i, 0, i, 0)]; 
                 decorationRanges.set(i+1, range);
                 
-                // console.log(range === decorationRanges.get(i+1))
-            
                 editor.setDecorations(decor, range);
             }
-
-
-            // var totalLines = editor.document.lineCount;
-            
-
-            // for(var i = 1; i <= maxIcons && i <= totalLines; ++i) {
-            //     var rangesForDecoration: vscode.Range[] = [new vscode.Range(i-1, 0, i-1, 0)];
-            //     editor.setDecorations(decorations[i], rangesForDecoration);
-            // }
 
         } else if(showLeftCol == vscode.TextEditorLineNumbersStyle.Relative) {
             var activeLine = editor.selection.active.line;
             var visibleStart = editor.visibleRanges[0].start.line;
             var visibleEnd = editor.visibleRanges[0].end.line;
-
-            // editor.setDecorations(decorations.get(getImagePath(activeLine)), []);
-            
-            // console.log("left REL visible: " + visibleStart + " ~ " + visibleEnd);
-
             var totalLines = editor.document.lineCount;
         
             //          must check 0                        seem redundant but just be safe
             for(var i = Math.max(visibleStart - 1, 0); i <= Math.min(visibleEnd + 1, totalLines - 1); ++i){
-                // seems no need to clear other keys ???
+                // seems no need to clear other keys
                 // 0.png is blank for i == activeLine
                 var decor = decorationMap.get(Math.abs(activeLine - i));
                 if(!decor) continue;  // seem to work
@@ -243,48 +229,24 @@ export function activate(context: vscode.ExtensionContext) {
                 // IMPORTANT: if the same number shows on two lines (activeLine between visibleStart and visibleEnd),
                 // we must use one rangesForDecoration for them, otherwise the latter one overwrites the first
                 var range = [new vscode.Range(i, 0, i, 0)];  
+                
                 // reflect i across activeLine
                 var r = 2*activeLine - i;
+                
                 //              must check 0                        seem redundant but just be safe
                 if(Math.max(visibleStart - 1, 0) <= r && r <= Math.min(visibleEnd + 1, totalLines - 1)) {
                     range.push(new vscode.Range(r, 0, r, 0));
                 }
                 decorationRanges.set(Math.abs(activeLine - i), range);
                 
-                // console.log(range === decorationRanges.get(Math.abs(activeLine - i)))
-            
-                // console.log("i: " + i + " Math.abs(activeLine - i):" )
-                // console.log(JSON.stringify(decor));
-
                 editor.setDecorations(decor, range);
             }
-
-            // var totalLines = editor.document.lineCount;
-
-            // for (var delta = 1; delta < maxIcons; delta++) {
-            //     var rangesForDecoration: vscode.Range[] = [];
-
-            //     // Check upwards
-            //     if (line - delta >= 0) {
-            //         rangesForDecoration.push(new vscode.Range(line - delta, 0, line - delta, 0));
-            //     }
-
-            //     // Check downwards
-            //     if (line + delta < totalLines) {
-            //         rangesForDecoration.push(new vscode.Range(line + delta, 0, line + delta, 0));
-            //     }
-
-            //     editor.setDecorations(decorations[delta], rangesForDecoration);
-            // }
 
         } 
     }
 
     // Updates "editor.lineNumbers" in settings.json
     function setRightDecorations(): void {
-        
-        // const configuration = vscode.workspace.getConfiguration("editor");
-
         switch (showRightCol) {
             case vscode.TextEditorLineNumbersStyle.Off:
                 editorConfiguration.update("lineNumbers", "off", vscode.ConfigurationTarget.Global);
@@ -299,17 +261,23 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     function loadImages(start : number, end : number)/*: vscode.TextEditorDecorationType[] */{
-       for (var i = start; i <= end; i++) {
-            if(!decorationMap.has(i))
+       for (var i = start; i < end; i++) {
+            
+            if(!decorationMap.has(i))  // redundant
                 decorationMap.set(i,
                     vscode.window.createTextEditorDecorationType({
-                        gutterIconPath: getImagePath(i), // path.join(__dirname, "..", "images", i.toString() + ".png"),
+                        gutterIconPath: getImagePath(i), 
                         gutterIconSize: "cover",
                     })
-                )
-
-            if(!decorationRanges.has(i))
+                );
+            
+            // TODO: create when applying decoration?
+            if(!decorationRanges.has(i))  // redundant
                 decorationRanges.set(i, <vscode.Range[]>[]);
+            // else {
+            //     var range : vscode.Range[] = decorationRanges.get(i)!;
+            //     decorationRanges.set(i, range);
+            // }
         }
     }
 
@@ -317,6 +285,56 @@ export function activate(context: vscode.ExtensionContext) {
     function getImagePath(i : number) {
         return OUT_DIR + i.toString() + ".png";
     }
+
+    // function refresh(start : number, end : number) {
+    //     var editor = vscode.window.activeTextEditor;
+    //     if (!editor) return;
+        
+    //     for (var i = start; i < end; i++) {
+    //         decorationMap.set(i,
+    //             vscode.window.createTextEditorDecorationType({
+    //                 gutterIconPath: getImagePath(i), 
+    //                 gutterIconSize: "cover",
+    //             })
+    //         );
+            
+    //         var decor = decorationMap.get(i);  // just set
+    //         if(!decor) continue;  // seem to work
+
+    //         if(!decorationRanges.has(i))  // redundant
+    //             decorationRanges.set(i, <vscode.Range[]>[]);
+    //         else {
+    //             var range : vscode.Range[] = decorationRanges.get(i)!;
+                
+    //             editor.setDecorations(decor, range);
+    //             decorationRanges.set(i, range);  // redundant???
+    //         }
+
+            
+    //     }
+
+    //     setLeftDecorations();
+    //     setRightDecorations();
+    // }
+
+
+    // vscode.commands.registerCommand("vscode-double-line-numbers.reload", () => {
+        
+    //     refresh(0, maxIcons);
+    //     // init();  // FIXME: duplicates number at selection while entering
+    //     // switching to another mode and back works
+    //     // for (var i = 0; i < maxIcons; i++) {
+            
+    //     //         decorationMap.set(i,
+    //     //             vscode.window.createTextEditorDecorationType({
+    //     //                 gutterIconPath: getImagePath(0), 
+    //     //                 gutterIconSize: "cover",
+    //     //             })
+    //     //         )
+
+    //     // }
+    // });
+
 }
 
 export function deactivate() {}

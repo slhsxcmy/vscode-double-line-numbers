@@ -1,8 +1,7 @@
 {
-	"_comment": "//\"canvas\": \"^2.6.1\"",
 	"name": "vscode-double-line-numbers",
 	"displayName": "Double Line Numbers",
-	"description": "",
+	"description": "Show both absolute and relative line numbers.",
 	"version": "0.0.1",
 	"publisher": "slhsxcmy",
 	"engines": {
@@ -61,9 +60,11 @@
 		"vscode-test": "^1.4.1"
 	},
 	"dependencies": {
-		"gm": "^1.23.1",
 		"sharp": "^0.26.3",
-		"text-to-svg": "^3.1.5",
-		"vectorize-text": "^3.2.1"
-	}
+		"text-to-svg": "^3.1.5"
+	},
+	"repository": {
+        "type": "git",
+        "url": "https://github.com/slhsxcmy/vscode-double-line-numbers/"
+    }
 }
