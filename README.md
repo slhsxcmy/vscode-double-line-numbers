@@ -2,7 +2,7 @@
 
 This is a Visual Studio Code extension that allows you adjust the display of line numbers to a combination of absolute and relative settings. 
 
-This should be helpful if you use one of the Vim plugins [VSCodeVim](#https://github.com/VSCodeVim/Vim), or are learning Vim like me.
+This should be helpful if you use one of the Vim plugins [VSCodeVim](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim), or are learning Vim like me.
 
 ## Installation
 
@@ -23,7 +23,7 @@ Open the command palette and run one of the following commands:
 
 - __Double Line Numbers: Off__ - turn off all line numbers, essentially setting the built-in setting `editor.lineNumbers` to `off`.
 
-## Source
+## Source Code
 
 [Github](https://github.com/slhsxcmy/vscode-double-line-numbers/)
 
