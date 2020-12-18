@@ -1,9 +1,8 @@
 // TODO: change theme -> regenerate images
 // TODO: save themed images for later
-// FIXME: without generate image OK, if generate image enter shows 1's
 // Fixed: ABS+REL -> REL+ABS some high ABS line numbers remains but can be refreshed if we selected past it: fixed by adding 0
 // Fixed: REL+ABS -> ABS+REL give wrong number 0 on the selected line: either not load 0, or call clearLeftDecorations() first
-// FIXME: the top and bottom of the page missings half a line number
+// Fixed: top and bottom of page missing half a line number: check 1 more line in setLeftDecorations
 /*
     onDidChangeActiveTextEditor         if totalLines changed, might need to generate images
     onDidChangeTextEditorSelection      if totalLines changed, might need to generate images and setLeftDecorations for new lines
@@ -118,7 +117,7 @@ export function activate(context: vscode.ExtensionContext) {
             context.globalState.update(MAX_ICONS, maxIcons);
         }
 
-        // TODO: might need to add if (totalLines changed)? might be redundant
+        // add if (totalLines changed)? might be redundant
         setLeftDecorations();
     });
 
@@ -168,7 +167,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Sets Decorations On Left Column 
     function setLeftDecorations(): void {
-        console.log("IN setLeftDecorations, maxIcons : " + maxIcons)
+        // console.log("IN setLeftDecorations, maxIcons : " + maxIcons)
         // always clear all existing decor; seem to work for switching modes
         clearLeftDecorations();
         // update global storage
@@ -187,10 +186,6 @@ export function activate(context: vscode.ExtensionContext) {
         var editor = vscode.window.activeTextEditor!;
         if (!editor) return;
         // if(showLeftCol == OFF) {  // redundant
-        //     // TODO: always clear all existing decor first???
-        //     // decorations.forEach((d) => {
-        //     //     editor.setDecorations(d, []);
-        //     // });
         //     for (const [key, value] of decorationMap.entries()) {
         //         editor.setDecorations(value, []);
         //     }
@@ -199,10 +194,11 @@ export function activate(context: vscode.ExtensionContext) {
             var visibleStart = editor.visibleRanges[0].start.line;
             var visibleEnd = editor.visibleRanges[0].end.line;
 
-            // console.log("visible: " + visibleStart + " ~ " + visibleEnd);
-
-            for(var i = visibleStart; i <= visibleEnd; ++i){
-                // var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
+            console.log("visible: " + visibleStart + " ~ " + visibleEnd);
+            var totalLines = editor.document.lineCount;
+            //          must check 0                        seem redundant but just be safe
+            for(var i = Math.max(visibleStart - 1, 0); i <= Math.min(visibleEnd + 1, totalLines - 1); ++i){
+                    // var rangesForDecoration: vscode.Range[] = [new vscode.Range(i, 0, i, 0)];
                 // var range = decorationRanges.get(i+1);
                 // if(!range) continue;  // ???
                 var decor = decorationMap.get(i+1);
@@ -226,29 +222,31 @@ export function activate(context: vscode.ExtensionContext) {
             // }
 
         } else if(showLeftCol == vscode.TextEditorLineNumbersStyle.Relative) {
-            // TODO: need to clear other keys ???
             var activeLine = editor.selection.active.line;
             var visibleStart = editor.visibleRanges[0].start.line;
             var visibleEnd = editor.visibleRanges[0].end.line;
 
             // editor.setDecorations(decorations.get(getImagePath(activeLine)), []);
             
-            // console.log("visible: " + visibleStart + " ~ " + visibleEnd);
+            // console.log("left REL visible: " + visibleStart + " ~ " + visibleEnd);
 
-            // 0.png is blank for i == activeLine
-            for(var i = visibleStart; i <= visibleEnd; ++i){
-                // if(i == activeLine) continue;
-                
+            var totalLines = editor.document.lineCount;
+        
+            //          must check 0                        seem redundant but just be safe
+            for(var i = Math.max(visibleStart - 1, 0); i <= Math.min(visibleEnd + 1, totalLines - 1); ++i){
+                // seems no need to clear other keys ???
+                // 0.png is blank for i == activeLine
                 var decor = decorationMap.get(Math.abs(activeLine - i));
                 if(!decor) continue;  // seem to work
-                
 
                 // IMPORTANT: if the same number shows on two lines (activeLine between visibleStart and visibleEnd),
                 // we must use one rangesForDecoration for them, otherwise the latter one overwrites the first
                 var range = [new vscode.Range(i, 0, i, 0)];  
                 // reflect i across activeLine
-                if(visibleStart <= 2*activeLine - i && 2*activeLine - i <= visibleEnd) {
-                    range.push(new vscode.Range(2*activeLine - i, 0, 2*activeLine - i, 0));
+                var r = 2*activeLine - i;
+                //              must check 0                        seem redundant but just be safe
+                if(Math.max(visibleStart - 1, 0) <= r && r <= Math.min(visibleEnd + 1, totalLines - 1)) {
+                    range.push(new vscode.Range(r, 0, r, 0));
                 }
                 decorationRanges.set(Math.abs(activeLine - i), range);
                 
