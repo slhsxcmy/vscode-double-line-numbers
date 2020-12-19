@@ -8,7 +8,7 @@
 	"version": "0.0.1",
 	"publisher": "slhsxcmy",
 	"engines": {
-		"vscode": "^1.6.0"
+		"vscode": "^1.52.0"
 	},
 	"categories": [
 		"Other"
@@ -42,15 +42,14 @@
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "webpack --mode production",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js",
-		"webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch",
-		"test-compile": "tsc -p ./"
+        "webpack-production": "webpack --mode production",
+        "vscode:prepublish": "npm run webpack-production",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
+        "test-compile": "tsc -p ./",
+        "lint": "eslint . --ext .ts,.tsx",
+        "pretest": "tsc -p ./",
+        "test": "jest out/"
 	},
 	"devDependencies": {
 		"@babel/preset-env": "^7.12.11",
