@@ -13,7 +13,9 @@
 - Update VS Code minimum version to 1.6.0
 
 ## [0.0.3] - 2020-12-18
+Reverted to v0.0.1
 ### Deleted
+- Extension Icon
 - Bundling with webpack. It has a weird error I will try to fix
 
 ## [Unreleased]
