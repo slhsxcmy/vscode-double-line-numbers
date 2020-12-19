@@ -7,6 +7,7 @@
 // Fixed: REL+ABS -> ABS+REL give wrong number 0 on the selected line: either not load 0, or call clearLeftDecorations() first
 // Fixed: top and bottom of page missing half a line number: check 1 more line in setLeftDecorations
 // Known issue: MAX_ICONS_DEFAULT == 1 -> no number shown on startup
+// TODO: detect images so we don't have to reset maxIcons and generate every time
 /*
     onDidChangeActiveTextEditor         if totalLines changed, might need to generate images
     onDidChangeTextEditorSelection      if totalLines changed, might need to generate images and setLeftDecorations for new lines
@@ -40,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     var maxIcons : number = UNDEF;
     const editorConfiguration = vscode.workspace.getConfiguration("editor");
         
-    // debugInit();
+    debugInit();
     init();
  
     function debugInit() {

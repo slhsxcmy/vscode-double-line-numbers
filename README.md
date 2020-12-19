@@ -29,8 +29,9 @@ Open the command palette and run one of the following commands:
 
 ## Known Issues
 
-When rapidly increasing the file size for the first time, e.g. pasting a very long file or opening a very long file, certain images might glitch and show as blanks.
-At 10,000 lines, generating images can become very slow.
+When rapidly increasing the file size for the first time, e.g. pasting a very long file or opening a very long file, certain images might glitch and show as blanks.  
+At 10,000 lines, generating images can become very slow.  Hopefully you don't need to edit such long files.  
+When I tried bundling with webpack, there is a missing fonts/ipag.ttf error. I don't know why but I'll try to fix it.  
 
 ## Technical Note
 
