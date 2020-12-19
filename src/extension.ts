@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
     var maxIcons : number = UNDEF;
     const editorConfiguration = vscode.workspace.getConfiguration("editor");
         
-    // debugInit();
+    debugInit();
     init();
  
     function debugInit() {
