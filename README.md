@@ -40,14 +40,8 @@ Any feedback or ideas are appreciated. If you find any bugs, please let me know 
 
 ## Acknowledgment
 
-This extension is inspired by extr0py's Relative Line Numbers.
+This extension is inspired by extr0py's Relative Line Numbers.  
 The images are generated using the `text-to-svg` and `sharp` libaries. 
-
-## Release Notes
-
-### 0.0.1
-- Initial version of Double Line Numbers
-- Supports 5 commands to adjust line numbers
 
 ## License
 
