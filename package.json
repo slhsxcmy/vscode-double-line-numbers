@@ -6,6 +6,9 @@
 	"icon": "icon.png",
 	"version": "0.0.4",
 	"publisher": "slhsxcmy",
+	"extensionKind": [
+        	"ui"
+    	],
 	"engines": {
 		"vscode": "^1.6.0"
 	},
