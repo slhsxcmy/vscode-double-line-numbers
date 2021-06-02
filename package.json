@@ -4,7 +4,7 @@
 	"description": "Display both absolute and relative line numbers.",
 	"license": "GPL-3.0-or-later",
 	"icon": "icon.png",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"publisher": "slhsxcmy",
 	"extensionKind": [
 		"ui"
