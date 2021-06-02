@@ -24,5 +24,13 @@ Reverted to v0.0.1, but doesn't work
 ### Added
 - Extension Icon
 
+## [0.0.5] - 2021-06-01
+This version doesn't work
+### Added
+- Added extensionKind value "ui" in package.json
+
+## [0.0.6] - 2021-06-01
+- Republish for extension to work
+
 ## [Unreleased]
 - Bug fixes

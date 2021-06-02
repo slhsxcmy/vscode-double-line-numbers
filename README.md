@@ -1,5 +1,3 @@
-# I'm trying to fix a bug where VSCode cannot seem to find package.json thus the extension cannot be installed via the Marketplace.
-
 # Double Line Numbers
 
 This is a Visual Studio Code extension that allows you adjust the display of line numbers to a combination of absolute and relative settings. 
