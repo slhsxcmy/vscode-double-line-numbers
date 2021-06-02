@@ -4,11 +4,11 @@
 	"description": "Display both absolute and relative line numbers.",
 	"license": "GPL-3.0-or-later",
 	"icon": "icon.png",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"publisher": "slhsxcmy",
 	"extensionKind": [
-        	"ui"
-    	],
+		"ui"
+	],
 	"engines": {
 		"vscode": "^1.6.0"
 	},
@@ -69,7 +69,7 @@
 		"text-to-svg": "^3.1.5"
 	},
 	"repository": {
-        "type": "git",
-        "url": "https://github.com/slhsxcmy/vscode-double-line-numbers/"
-    }
+		"type": "git",
+		"url": "https://github.com/slhsxcmy/vscode-double-line-numbers/"
+	}
 }
