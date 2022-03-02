@@ -11,11 +11,11 @@ Any feedback or ideas are appreciated. If you find any bugs, please let me know 
 ## Installation
 
 - Install `Double Line Numbers` in the Extentions Marketplace
-- You can customize the color of left line numbers by going to `Settings > Extentions > Double Line Numbers > Font: Color`. You can use color names or hex values.
+- Optional: You can customize the left line numbers appearance by going to `Settings > Extentions > Double Line Numbers`.
 
 ## Commands
 
-Open the command palette and run one of the following commands:
+Open the command palette (`Cmd/Ctrl + Shift + P`) and run one of the following commands:
 
 - **Double Line Numbers: Absolute + Relative** - show absolute line numbers on the left and relative line numbers on the right.
 
@@ -27,22 +27,27 @@ Open the command palette and run one of the following commands:
 
 - **Double Line Numbers: Off** - turn off all line numbers, essentially setting the built-in setting `editor.lineNumbers` to `off`.
 
+## Known Issues
+
+1. [Displaying gutter icons hides breakpoints](https://github.com/microsoft/vscode/issues/5923). If you need to use breakpoints, you can do either of the following:
+
+   - Turn off the left line numbers temporarily
+   - Use the **Relative + Absolute** setting. The currently selected line does not have any gutter icon, so you can select the line first, then toggle the breakpoint.
+
+2. The gutter width cannot be adjusted, so if the left line number has more than 4 digits, the digits become really squeezed and slim. Hopefully your not editing such a long file... Related issues:
+
+   - [Add option editor.lineDecorationsWidth as official](https://github.com/microsoft/vscode/issues/93887)
+   - [Add editor.contentLeftPadding to add padding between the editorGutter and editor.](https://github.com/microsoft/vscode/issues/135114)
+
+## Acknowledgment
+
+- This extension is inspired by [extr0py's Relative Line Numbers](https://marketplace.visualstudio.com/items?itemName=extr0py.vscode-relative-line-numbers).
+
+## License
+
+- [GPL Version 3](LICENSE.md)
+
 ## Links
 
 - [Github](https://github.com/slhsxcmy/vscode-double-line-numbers/)
 - [Marketplace](https://marketplace.visualstudio.com/items?itemName=slhsxcmy.vscode-double-line-numbers)
-
-## Known Issues
-
-[Displaying gutter icons hides breakpoints](https://github.com/microsoft/vscode/issues/5923). If you need to use breakpoints:
-
-- Turn off the left line numbers
-- Use the **Relative + Absolute** setting. The currently selected line does not have any gutter icon, so you can select the line first, then toggle the breakpoint.
-
-## Acknowledgment
-
-This extension is inspired by [extr0py's Relative Line Numbers](https://marketplace.visualstudio.com/items?itemName=extr0py.vscode-relative-line-numbers).
-
-## License
-
-[GPL Version 3](LICENSE.md)

@@ -73,7 +73,7 @@ class LineNumberManager {
   getRightState() {
     return vscode.workspace
       .getConfiguration()
-      .get("editor.lineNumbers", rightStateMap["off"]);
+      .get("editor.lineNumbers", rightStateMap.off);
   }
 
   /**
@@ -105,7 +105,7 @@ class LineNumberManager {
   getLeftState() {
     return this.context.globalState.get(
       this.LEFT_STATE_STORE,
-      leftStateMap["off"]
+      leftStateMap.off
     );
   }
 
@@ -208,13 +208,11 @@ function registerCommands(mgr: LineNumberManager) {
         mgr.setLeftState(key);
         mgr.setRightState(key);
         if (key !== "off") {
-          vscode.workspace
-            .getConfiguration()
-            .update(
-              "editor.glyphMargin",
-              true,
-              vscode.ConfigurationTarget.Global
-            );
+          vscode.workspace.getConfiguration().update(
+            "editor.glyphMargin", // turn on glyph margin
+            true,
+            vscode.ConfigurationTarget.Global
+          );
         }
       }
     );
@@ -231,22 +229,31 @@ function registerCommands(mgr: LineNumberManager) {
 function getSvgUri(num: number) {
   const width = 100;
   const height = 100;
-  const x = width;
+  const x = width / 2;
   const y = height / 2;
-  const textLength = width;
   const lengthAdjust = "spacingAndGlyphs";
-  const fontWeight = "600";
-  const fontSize = 66;
-  const fontFamily = vscode.workspace
-    .getConfiguration()
-    .get("editor.fontFamily");
+  const textAnchor = "middle";
+  const dominantBaseline = "central";
   const fill = encodeURIComponent(
     vscode.workspace
       .getConfiguration()
       .get("vscode-double-line-numbers.font.color", "#858585")
   );
-  const textAnchor = "end";
-  const dominantBaseline = "central";
+  const fontWeight = vscode.workspace
+    .getConfiguration()
+    .get("vscode-double-line-numbers.font.weight");
+  const fontFamily = vscode.workspace
+    .getConfiguration()
+    .get(
+      "vscode-double-line-numbers.font.family",
+      vscode.workspace.getConfiguration().get("editor.fontFamily")
+    );
+  const textLength = vscode.workspace
+    .getConfiguration()
+    .get("vscode-double-line-numbers.text.width");
+  const fontSize = vscode.workspace
+    .getConfiguration()
+    .get("vscode-double-line-numbers.text.height");
 
   return `data:image/svg+xml;utf8,<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><text x="${x}" y="${y}" textLength="${textLength}" lengthAdjust="${lengthAdjust}" font-weight="${fontWeight}" font-size="${fontSize}" font-family="${fontFamily}" fill="${fill}" text-anchor="${textAnchor}" dominant-baseline="${dominantBaseline}">${num
     .toString()

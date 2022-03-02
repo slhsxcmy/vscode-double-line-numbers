@@ -55,6 +55,9 @@ This version doesn't work
 - Use data URI with SVG for gutter icons. No more local images!
 - Activate onStartupFinished. Better performance!
 
-## [Unreleased]
+## [0.1.2] - Skipped because vsce error...
 
-- Bug fixes
+## [0.1.3] - 2022-03-05
+
+- Add customizable font settings
+- New extension icon!
