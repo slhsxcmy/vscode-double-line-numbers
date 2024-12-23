@@ -1,10 +1,10 @@
 {
   "name": "vscode-double-line-numbers",
-  "displayName": "Double Line Numbers",
+  "displayName": "Double Line Numbers - DEBUG",
   "description": "Display both absolute and relative line numbers.",
   "license": "GPL-3.0-or-later",
   "icon": "icon.png",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "publisher": "slhsxcmy",
   "extensionKind": [
     "ui"
@@ -22,6 +22,11 @@
   "contributes": {
     "configuration": {
       "properties": {
+        "vscode-double-line-numbers.delay": {
+          "type": "number",
+          "default": 50,
+          "markdownDescription": "Delay in milliseconds for throttling line number updates. Default is 50ms."
+        },
         "vscode-double-line-numbers.font.color": {
           "type": "string",
           "default": "#858585",

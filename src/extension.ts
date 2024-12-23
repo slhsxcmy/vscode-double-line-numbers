@@ -30,7 +30,7 @@ class LineNumberManager {
   readonly NO_DECOR = -1;
 
   context: vscode.ExtensionContext;
-
+  delayTime: number; // Added delayTime property
   /* decorTypeMap
     {
       editor0: {
@@ -61,10 +61,28 @@ class LineNumberManager {
    */
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
+    this.delayTime = vscode.workspace
+      .getConfiguration()
+      .get("vscode-double-line-numbers.delay", 50);
     this.decorTypeMap = new Map();
     this.decorNumMap = new Map();
-    this.updateDecorDebounced = this.debounce(this.updateDecor.bind(this), 150);
+    this.updateDecorDebounced = this.debounce(
+      this.updateDecor.bind(this),
+      this.delayTime
+    );
     this.updateAllDecor();
+
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration("vscode-double-line-numbers.delay")) {
+        this.delayTime = vscode.workspace
+          .getConfiguration()
+          .get("vscode-double-line-numbers.delay", 50);
+        this.updateDecorDebounced = this.debounce(
+          this.updateDecor.bind(this),
+          this.delayTime
+        );
+      }
+    });
   }
 
   /**
