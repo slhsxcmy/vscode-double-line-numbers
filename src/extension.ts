@@ -52,6 +52,7 @@ class LineNumberManager {
     Map<number, vscode.TextEditorDecorationType>
   >;
   decorNumMap: Map<vscode.TextEditor, Map<number, number>>;
+  updateDecorDebounced: (editor: vscode.TextEditor) => void;
 
   /**
    * Constructor of LineNumberManager
@@ -62,7 +63,7 @@ class LineNumberManager {
     this.context = context;
     this.decorTypeMap = new Map();
     this.decorNumMap = new Map();
-
+    this.updateDecorDebounced = this.debounce(this.updateDecor.bind(this), 150);
     this.updateAllDecor();
   }
 
@@ -126,7 +127,7 @@ class LineNumberManager {
    */
   updateAllDecor() {
     vscode.window.visibleTextEditors.forEach((editor) => {
-      this.updateDecor(editor);
+      this.updateDecorDebounced(editor);
     });
   }
 
@@ -194,6 +195,35 @@ class LineNumberManager {
     } else {
       return vscode.window.createTextEditorDecorationType({});
     }
+  }
+
+  /**
+   * Creates a debounced function that delays invoking the provided function until after a specified wait time has elapsed
+   * since the last time the debounced function was invoked. Optionally, the function can be invoked immediately on the first call.
+   *
+   * @param func - The function to debounce.
+   * @param wait - The number of milliseconds to delay.
+   * @param immediate - If `true`, the function will be invoked on the leading edge of the timeout, instead of the trailing.
+   * @returns A new debounced function.
+   */
+  debounce(func: Function, wait: number, immediate: boolean = false) {
+    let timeout: NodeJS.Timeout | null = null; // Initialize as null
+    return (...args: any[]) => {
+      const later = () => {
+        timeout = null; // Reset to null after the timeout is cleared
+        if (!immediate) {
+          func(...args);
+        }
+      };
+      const callNow = immediate && !timeout;
+      if (timeout) {
+        clearTimeout(timeout);
+      } // Clear previous timeout
+      timeout = setTimeout(later, wait);
+      if (callNow) {
+        func(...args);
+      }
+    };
   }
 }
 
@@ -277,19 +307,19 @@ export function activate(context: vscode.ExtensionContext) {
 
   // scroll; create/delete new lines
   vscode.window.onDidChangeTextEditorVisibleRanges((event) => {
-    mgr.updateDecor(event.textEditor);
+    mgr.updateDecorDebounced(event.textEditor);
   });
 
   // click into different editor
   vscode.window.onDidChangeActiveTextEditor((editor) => {
     if (editor) {
-      mgr.updateDecor(editor);
+      mgr.updateDecorDebounced(editor);
     }
   });
 
   // select new lines in editor
   vscode.window.onDidChangeTextEditorSelection((event) => {
-    mgr.updateDecor(event.textEditor);
+    mgr.updateDecorDebounced(event.textEditor);
   });
 
   // open/close editors
