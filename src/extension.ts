@@ -114,7 +114,9 @@ class LineNumberManager {
    * @param {string} key left state key, one of "abs_rel", "rel_abs", "abs", "rel", "off"
    */
   setLeftState(key: string) {
-    if (this.getLeftState() === leftStateMap[key]) return; // Optimization
+    if (this.getLeftState() === leftStateMap[key]) {
+      return;
+    } // Optimization
     this.context.globalState.update(this.LEFT_STATE_STORE, leftStateMap[key]);
     this.updateAllDecor();
   }
@@ -141,9 +143,12 @@ class LineNumberManager {
     const activeLine = editor.selection.active.line;
 
     // Create new map
-    if (!this.decorTypeMap.has(editor))
+    if (!this.decorTypeMap.has(editor)) {
       this.decorTypeMap.set(editor, new Map());
-    if (!this.decorNumMap.has(editor)) this.decorNumMap.set(editor, new Map());
+    }
+    if (!this.decorNumMap.has(editor)) {
+      this.decorNumMap.set(editor, new Map());
+    }
 
     for (let i = start; i <= end; ++i) {
       let num: number;
@@ -167,10 +172,11 @@ class LineNumberManager {
 
     // apply decor
     for (let i = start; i <= end; ++i) {
-      if (this.decorNumMap.get(editor)!.has(i))
+      if (this.decorNumMap.get(editor)!.has(i)) {
         editor.setDecorations(this.decorTypeMap.get(editor)!.get(i)!, [
           new vscode.Range(i, 0, i, 0),
         ]);
+      }
     }
   }
 
@@ -276,7 +282,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // click into different editor
   vscode.window.onDidChangeActiveTextEditor((editor) => {
-    if (editor) mgr.updateDecor(editor);
+    if (editor) {
+      mgr.updateDecor(editor);
+    }
   });
 
   // select new lines in editor
