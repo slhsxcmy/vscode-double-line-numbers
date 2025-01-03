@@ -30,7 +30,7 @@ class LineNumberManager {
   readonly NO_DECOR = -1;
 
   context: vscode.ExtensionContext;
-  delayTime: number; // Added delayTime property
+  delayTime: number;
   /* decorTypeMap
     {
       editor0: {
@@ -135,7 +135,7 @@ class LineNumberManager {
   setLeftState(key: string) {
     if (this.getLeftState() === leftStateMap[key]) {
       return;
-    } // Optimization
+    }
     this.context.globalState.update(this.LEFT_STATE_STORE, leftStateMap[key]);
     this.updateAllDecor();
   }
@@ -225,10 +225,10 @@ class LineNumberManager {
    * @returns A new debounced function.
    */
   debounce(func: Function, wait: number, immediate: boolean = false) {
-    let timeout: NodeJS.Timeout | null = null; // Initialize as null
+    let timeout: NodeJS.Timeout | null = null;
     return (...args: any[]) => {
       const later = () => {
-        timeout = null; // Reset to null after the timeout is cleared
+        timeout = null;
         if (!immediate) {
           func(...args);
         }
@@ -236,7 +236,7 @@ class LineNumberManager {
       const callNow = immediate && !timeout;
       if (timeout) {
         clearTimeout(timeout);
-      } // Clear previous timeout
+      }
       timeout = setTimeout(later, wait);
       if (callNow) {
         func(...args);
