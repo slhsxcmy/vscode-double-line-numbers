@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 const names: { [key: string]: string } = {
   abs_rel: "Absolute + Relative",
@@ -288,6 +288,14 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeVisibleTextEditors((editors) => {
     mgr.updateAllDecor();
   });
+
+  /*
+  const disposable = vscode.commands.registerCommand('vscode-double-line-numbers.helloWorld', () => {
+    vscode.window.showInformationMessage('Hello World from vscode-double-line-numbers!');
+  });
+
+  context.subscriptions.push(disposable);
+  */
 }
 
 /**
