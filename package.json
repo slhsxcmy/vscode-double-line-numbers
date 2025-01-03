@@ -1,10 +1,10 @@
 {
   "name": "vscode-double-line-numbers",
-  "displayName": "Double Line Numbers - DEBUG",
+  "displayName": "Double Line Numbers",
   "description": "Display both absolute and relative line numbers.",
   "license": "GPL-3.0-or-later",
   "icon": "icon.png",
-  "version": "0.2.0",
+  "version": "0.1.4",
   "publisher": "slhsxcmy",
   "extensionKind": [
     "ui"
