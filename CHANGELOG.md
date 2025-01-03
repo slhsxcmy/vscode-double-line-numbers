@@ -61,3 +61,7 @@ This version doesn't work
 
 - Add customizable font settings
 - New extension icon!
+
+## [0.2.0] - 2025-01-03
+- Update project files
+- Make current line number disappear on the left (for Absolute + Relative)
