@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 const names: { [key: string]: string } = {
   abs_rel: "Absolute + Relative",
@@ -52,6 +52,7 @@ class LineNumberManager {
     Map<number, vscode.TextEditorDecorationType>
   >;
   decorNumMap: Map<vscode.TextEditor, Map<number, number>>;
+  lastActiveLine: Map<vscode.TextEditor, number>;
 
   /**
    * Constructor of LineNumberManager
@@ -62,6 +63,7 @@ class LineNumberManager {
     this.context = context;
     this.decorTypeMap = new Map();
     this.decorNumMap = new Map();
+    this.lastActiveLine = new Map();
 
     this.updateAllDecor();
   }
@@ -139,6 +141,8 @@ class LineNumberManager {
       editor.document.lineCount - 1
     );
     const activeLine = editor.selection.active.line;
+    const lastActiveLine = this.lastActiveLine.get(editor);
+    this.lastActiveLine.set(editor, activeLine);
 
     // Create new map
     if (!this.decorTypeMap.has(editor))
@@ -147,10 +151,17 @@ class LineNumberManager {
 
     for (let i = start; i <= end; ++i) {
       let num: number;
+
+      const isActiveLine = i === activeLine;
+      const isLastActiveLine = i === lastActiveLine;
+
       if (this.getLeftState() === vscode.TextEditorLineNumbersStyle.Off) {
         num = this.NO_DECOR;
       } else if (this.getLeftState() === vscode.TextEditorLineNumbersStyle.On) {
-        num = i + 1;
+        if (isActiveLine)
+          num = this.NO_DECOR;
+        else
+          num = i + 1;
       } else if (
         this.getLeftState() === vscode.TextEditorLineNumbersStyle.Relative
       ) {
@@ -158,7 +169,7 @@ class LineNumberManager {
       }
 
       // need to update: dispose old, map new
-      if (this.decorNumMap.get(editor)!.get(i) !== num!) {
+      if (this.decorNumMap.get(editor)!.get(i) !== num! || isLastActiveLine) {
         this.decorTypeMap.get(editor)!.get(i)?.dispose();
         this.decorTypeMap.get(editor)!.set(i, this.createDecorType(num!));
         this.decorNumMap.get(editor)!.set(i, num!);
@@ -288,6 +299,14 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeVisibleTextEditors((editors) => {
     mgr.updateAllDecor();
   });
+
+  /*
+  const disposable = vscode.commands.registerCommand('vscode-double-line-numbers.helloWorld', () => {
+    vscode.window.showInformationMessage('Hello World from vscode-double-line-numbers!');
+  });
+
+  context.subscriptions.push(disposable);
+  */
 }
 
 /**
