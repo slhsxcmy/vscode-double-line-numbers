@@ -2,7 +2,7 @@
 
 This is a Visual Studio Code extension that allows you adjust the display of line numbers to a combination of absolute and relative settings.
 
-This should be helpful if you use one of the Vim plugins [VSCodeVim](#https://github.com/VSCodeVim/Vim), or are learning Vim like me.
+This should be helpful if you use one of the Vim plugins [VSCodeVim](https://github.com/VSCodeVim/Vim), or are learning Vim like me.
 
 The Visual Studio Code API doesn't support a great way to display anything on the left of the built-in line numbers. Therefore, "gutterIcon" is used to display the left line numbers as SVGs.
 

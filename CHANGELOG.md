@@ -61,3 +61,8 @@ This version doesn't work
 
 - Add customizable font settings
 - New extension icon!
+
+## [0.1.4] - 2025-01-03
+
+- Added delay functionality to prevent re-rendering on repeated vim motions (e.g. `9j` or `12k`)
+- Added delay configuration option to extension settings
