@@ -30,7 +30,6 @@ class LineNumberManager {
   readonly NO_DECOR = -1;
 
   context: vscode.ExtensionContext;
-  delayTime: number;
   /* decorTypeMap
     {
       editor0: {
@@ -52,7 +51,7 @@ class LineNumberManager {
     Map<number, vscode.TextEditorDecorationType>
   >;
   decorNumMap: Map<vscode.TextEditor, Map<number, number>>;
-  updateDecorDebounced: (editor: vscode.TextEditor) => void;
+  updateDecorDebounced!: (editor: vscode.TextEditor) => void;
 
   /**
    * Constructor of LineNumberManager
@@ -61,28 +60,31 @@ class LineNumberManager {
    */
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
-    this.delayTime = vscode.workspace
-      .getConfiguration()
-      .get("vscode-double-line-numbers.delay", 50);
     this.decorTypeMap = new Map();
     this.decorNumMap = new Map();
-    this.updateDecorDebounced = this.debounce(
-      this.updateDecor.bind(this),
-      this.delayTime
-    );
-    this.updateAllDecor();
+
+    this.initializeUpdateDecorDebounced();
 
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration("vscode-double-line-numbers.delay")) {
-        this.delayTime = vscode.workspace
-          .getConfiguration()
-          .get("vscode-double-line-numbers.delay", 50);
-        this.updateDecorDebounced = this.debounce(
-          this.updateDecor.bind(this),
-          this.delayTime
-        );
+        this.initializeUpdateDecorDebounced();
       }
     });
+
+    this.updateAllDecor();
+  }
+
+  /**
+   * Updates the delay time and debounced function based on configuration
+   */
+  private initializeUpdateDecorDebounced() {
+    const delayTime = vscode.workspace
+      .getConfiguration()
+      .get("vscode-double-line-numbers.delay", 50);
+    this.updateDecorDebounced = this.debounce(
+      this.updateDecor.bind(this),
+      delayTime
+    );
   }
 
   /**
